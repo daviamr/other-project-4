@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Check, ChevronsLeft, ChevronsRight, Copy, Download, Edit, Loader, Orbit, Search, Trash } from "lucide-react"
+import { ChevronsLeft, ChevronsRight, Copy, Download, Loader, Orbit, Search, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
