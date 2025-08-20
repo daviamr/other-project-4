@@ -1,4 +1,4 @@
-import { CheckerTable } from "@/components/common/checker-table";
+import { FileTable } from "@/components/common/file-table";
 
 export function CheckerPage() {
 
@@ -12,7 +12,7 @@ export function CheckerPage() {
             <div className="flex gap-4">
               <h1 className="text-3xl font-semibold">Checker</h1>
             </div>
-            <CheckerTable/>
+            <FileTable />
           </div>
 
         </div>

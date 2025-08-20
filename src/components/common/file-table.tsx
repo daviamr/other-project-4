@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ChevronsLeft, ChevronsRight, Copy, Download, Loader, Orbit, Search, Trash } from "lucide-react"
+import { ChevronsLeft, ChevronsRight, Download, Eye, Loader, Search, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -32,55 +32,39 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
 } from "@/components/ui/select"
-// import { UploadSheet } from "../upload-sheet"
-import { SheetInfo } from "../sheetIconsInfo"
+import { UploadSheet } from "../upload-sheet"
 import { TooltipPadrao } from "../tooltip"
 import { useSheetController } from "@/pages/Checker/sheet-controller"
+import { CheckerTable } from "./checker-table"
 
 const data: Payment[] = [
   {
     id: "m5gr84i9",
-    numero: "+55 (21) 988776-65544",
-    anatel: 'Válido',
-    operadora: "Claro",
-    tipo: 'Móvel',
-    municipio: 'RJ',
-    dataHoraConsulta: '25/10/2398, 18:09h'
+    nomeArquivo: "planilha-template-1.xlsx",
+    dataUpload: "25/10/2023, 12:44h",
   },
   {
     id: "m5gr84i10",
-    numero: "+55 (21) 988776-65544",
-    anatel: 'Inválido',
-    operadora: "Tim",
-    tipo: 'Móvel',
-    municipio: 'SP',
-    dataHoraConsulta: '12/12/3498, 13:39h'
+    nomeArquivo: "planilha-template-3.xlsx",
+    dataUpload: "19/08/2024, 08:21h",
+
   },
   {
     id: "m5gr84i11",
-    numero: "+55 (21) 988776-65544",
-    anatel: 'Inválido',
-    operadora: "Vivo",
-    tipo: 'Fixo',
-    municipio: 'RJ',
-    dataHoraConsulta: '01/07/9888, 12:18h'
+    nomeArquivo: "planilha-template-3.xlsx",
+    dataUpload: "20/08/2025, 14:53h",
   }
 ]
 
 export type Payment = {
   id: string
-  numero: string
-  anatel: string
-  operadora: string
-  tipo: string
-  municipio: string
-  dataHoraConsulta: string
+  nomeArquivo: string
+  dataUpload: string
 }
 
-export function CheckerTable() {
+export function FileTable() {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -88,35 +72,27 @@ export function CheckerTable() {
   const [maxRows, setMaxRows] = React.useState(50)
   const [isLoading, setIsLoading] = React.useState(false)
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
+  const [selectedFile, setSelectedFile] = React.useState<{}>()
+  const [showCheckerTable, setShowCheckerTable] = React.useState(false)
   const [hasSelectedRows, setHasSelectedRows] = React.useState(false)
-  const [showField, setShowField] = React.useState<string>('Todos')
   const { exportDefaultSheet } = useSheetController()
-  const copyFormattedData = async (rowData: Payment) => {
-    const formattedText = `Número: ${rowData.numero} | Operadora: ${rowData.operadora} | Data de Consulta: ${rowData.dataHoraConsulta}`
 
-    try {
-      await navigator.clipboard.writeText(formattedText);
-      // Aqui você pode adicionar uma notificação de sucesso se quiser
-      console.log('Dados copiados com sucesso!');
-    } catch (err) {
-      console.error('Erro ao copiar dados:', err);
-      // Fallback para navegadores mais antigos
-      const textArea = document.createElement('textarea');
-      textArea.value = formattedText;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-    }
-  };
+  React.useEffect(() => {
+    if (selectedFile) {
+      setIsLoading(true)
+      setShowCheckerTable(false)
 
-  const filteredData = React.useMemo(() => {
-    if (showField === 'Todos') {
-      return data
+      const timer = setTimeout(() => {
+        setIsLoading(false)
+        setShowCheckerTable(true)
+      }, 1500)
+
+      return () => clearTimeout(timer)
+    } else {
+      setShowCheckerTable(false)
+      setIsLoading(false)
     }
-    const filteredData = data.filter(item => item.operadora === showField)
-    return filteredData
-  }, [showField])
+  }, [selectedFile])
 
   const columns: ColumnDef<Payment>[] = [
     {
@@ -139,48 +115,33 @@ export function CheckerTable() {
       size: 30,
     },
     {
-      accessorKey: "numero",
-      header: "Número",
-      cell: ({ row }) => (<p>{row.getValue("numero")}</p>),
-      size: 180,
+      accessorKey: "nomeArquivo",
+      header: "Nome do Arquivo",
+      cell: ({ row }) => (<div className="capitalize">{row.getValue("nomeArquivo")}</div>),
     },
     {
-      accessorKey: "anatel",
-      header: "Anatel",
-      cell: ({ row }) => (<div className="capitalize">{row.getValue("anatel")}</div>),
-    },
-    {
-      accessorKey: "operadora",
-      header: "Operadora",
-      cell: ({ row }) => (<div className="capitalize">{row.getValue("operadora")}</div>),
-    },
-    {
-      accessorKey: "tipo",
-      header: "Tipo",
-      cell: ({ row }) => (<div className="capitalize">{row.getValue("tipo")}</div>),
-    },
-    {
-      accessorKey: "municipio",
-      header: "Município",
-      cell: ({ row }) => (<div className="capitalize">{row.getValue("municipio")}</div>),
-    },
-    {
-      accessorKey: "dataHoraConsulta",
-      header: "Data Consulta",
-      cell: ({ row }) => (<div className="capitalize">{row.getValue("dataHoraConsulta")}</div>),
+      accessorKey: "dataUpload",
+      header: "Data Upload",
+      cell: ({ row }) => (<div className="capitalize">{row.getValue("dataUpload")}</div>),
     },
     {
       accessorKey: "utils",
       header: "",
       cell: ({ row }) => (<div className="capitalize flex justify-end gap-2">
         { }
-        <TooltipPadrao message="Copiar dados">
+        <TooltipPadrao message="Renderizar planilha">
           <Button
             variant={"outline"}
             size={"icon"}
-            onClick={() => copyFormattedData(row.original)}>
-            <Copy />
+            onClick={() => setSelectedFile(row.original.id)}>
+            <Eye />
             {row.getValue("select")}</Button>
+        </TooltipPadrao>
+        <TooltipPadrao message="Download">
+          <Button
+            variant={"secondary"}
+            size={'icon'}
+            onClick={exportDefaultSheet}><Download size={16} /></Button>
         </TooltipPadrao>
         {/* {row.getIsSelected() && (
           <Button
@@ -204,7 +165,7 @@ export function CheckerTable() {
   ]
 
   const table = useReactTable({
-    data: filteredData,
+    data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -233,34 +194,16 @@ export function CheckerTable() {
     }, 1000)
   }, [maxRows, table]);
 
-  return (
+  return !showCheckerTable ? (
     <div className=" w-full">
       <div className="relative flex items-center py-4">
         <Search size={16} className="absolute left-2" />
-        <div className="flex items-center gap-4 w-full">
+        <div className="flex items-center gap-4 w-full max-w-xs">
           <Input
             placeholder="Filtrar por palavra"
-            value={(table.getColumn("operadora")?.getFilterValue() as string) ?? ""}
-            onChange={(event) => table.getColumn("operadora")?.setFilterValue(event.target.value)}
+            value={(table.getColumn("nomeArquivo")?.getFilterValue() as string) ?? ""}
+            onChange={(event) => table.getColumn("nomeArquivo")?.setFilterValue(event.target.value)}
             className="pl-8 min-w-40" />
-
-          <Select value={showField} onValueChange={setShowField}>
-            <SelectTrigger className="font-bold w-40">
-              <Orbit size={16} />
-              {showField}
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Filtrar por operadora</SelectLabel>
-                <SelectItem value='Todos'>Todos</SelectItem>
-                <SelectItem value='Tim'>Tim</SelectItem>
-                <SelectItem value='Vivo'>Vivo</SelectItem>
-                <SelectItem value='Claro'>Claro</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-
-          <SheetInfo success={92} error={10} pf={10} pj={22} unkpfpj={13} />
         </div>
 
         <div className="flex w-full justify-end">
@@ -269,15 +212,15 @@ export function CheckerTable() {
             <TooltipPadrao message="Excluir Selecionados">
               <Button variant={"outline"} className={`hidden ${hasSelectedRows && 'flex'}`} size={"icon"}><Trash size={16} /></Button>
             </TooltipPadrao>
-            <TooltipPadrao message="Baixar Selecionados">
+            <TooltipPadrao message="Download Selecionados">
               <Button variant={"outline"} className={`hidden ${hasSelectedRows && 'flex'}`}
-                onClick={() => { console.log(selectedIds) }}><Download size={16} /> Download Seleção</Button>
+                onClick={() => { console.log(selectedIds) }}><Download size={16} /> Seleção</Button>
             </TooltipPadrao>
           </div>
-          {/* <UploadSheet /> */}
-          <TooltipPadrao message="Download Total">
-            <Button variant={"secondary"} className="ml-4" onClick={exportDefaultSheet}><Download size={16} /> Download Base</Button>
-          </TooltipPadrao>
+          <UploadSheet />
+          {/* <TooltipPadrao message="Download Total">
+            <Button variant={"secondary"} className="ml-4" onClick={exportDefaultSheet}><Download size={16} /> Download</Button>
+          </TooltipPadrao> */}
         </div>
       </div>
       <div className="rounded-md border relative">
@@ -383,5 +326,5 @@ export function CheckerTable() {
         </div>
       </div>
     </div>
-  )
+  ) : (<CheckerTable />)
 }
