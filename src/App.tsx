@@ -9,6 +9,7 @@ import { CheckerPage } from "./pages/Checker/page";
 import { LoginPage } from "./pages/Login/page";
 import { UserPage } from "./pages/User/page"
 import { AnatelPage } from "./pages/Anatel/page";
+import { ViewSheetProvider } from "./contexts/sheet-provider";
 
 
 function RootApp() {
@@ -36,7 +37,10 @@ function App() {
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <AuthProvider>
         <ViewProvider>
+          <ViewSheetProvider>
+
           <RootApp />
+          </ViewSheetProvider>
           <ToastContainer />
         </ViewProvider>
       </AuthProvider>

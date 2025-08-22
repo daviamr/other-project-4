@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ChevronsLeft, ChevronsRight, Download, Eye, Loader, Search, Trash } from "lucide-react"
+import { CheckCircle, ChevronsLeft, ChevronsRight, Download, Eye, Loader, Search, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -38,23 +38,38 @@ import { UploadSheet } from "../upload-sheet"
 import { TooltipPadrao } from "../tooltip"
 import { useSheetController } from "@/pages/Checker/sheet-controller"
 import { CheckerTable } from "./checker-table"
+import { useViewSheet } from "@/contexts/sheet-context"
 
 const data: Payment[] = [
   {
     id: "m5gr84i9",
     nomeArquivo: "planilha-template-1.xlsx",
     dataUpload: "25/10/2023, 12:44h",
+    status: 'success',
+    totalLinhas: '323',
+    totalLinhasInvalidas: '23',
+    fixo: '234',
+    movel: '90'
   },
   {
     id: "m5gr84i10",
     nomeArquivo: "planilha-template-3.xlsx",
     dataUpload: "19/08/2024, 08:21h",
-
+    status: 'success',
+    totalLinhas: '1223',
+    totalLinhasInvalidas: '134',
+    fixo: '897',
+    movel: '238'
   },
   {
     id: "m5gr84i11",
     nomeArquivo: "planilha-template-3.xlsx",
     dataUpload: "20/08/2025, 14:53h",
+    status: 'pending',
+    totalLinhas: '9874',
+    totalLinhasInvalidas: '1876',
+    fixo: '7462',
+    movel: '483'
   }
 ]
 
@@ -62,6 +77,11 @@ export type Payment = {
   id: string
   nomeArquivo: string
   dataUpload: string
+  status: string
+  totalLinhas: string
+  totalLinhasInvalidas: string
+  fixo: string
+  movel: string
 }
 
 export function FileTable() {
@@ -72,27 +92,11 @@ export function FileTable() {
   const [maxRows, setMaxRows] = React.useState(50)
   const [isLoading, setIsLoading] = React.useState(false)
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
-  const [selectedFile, setSelectedFile] = React.useState<{}>()
-  const [showCheckerTable, setShowCheckerTable] = React.useState(false)
+  const [selectedFile, setSelectedFile] = React.useState<{ id: string, name: string }>()
   const [hasSelectedRows, setHasSelectedRows] = React.useState(false)
+  const { changeViewSheet, viewSheet } = useViewSheet()
   const { exportDefaultSheet } = useSheetController()
-
-  React.useEffect(() => {
-    if (selectedFile) {
-      setIsLoading(true)
-      setShowCheckerTable(false)
-
-      const timer = setTimeout(() => {
-        setIsLoading(false)
-        setShowCheckerTable(true)
-      }, 1500)
-
-      return () => clearTimeout(timer)
-    } else {
-      setShowCheckerTable(false)
-      setIsLoading(false)
-    }
-  }, [selectedFile])
+  console.log(selectedFile)
 
   const columns: ColumnDef<Payment>[] = [
     {
@@ -125,6 +129,35 @@ export function FileTable() {
       cell: ({ row }) => (<div className="capitalize">{row.getValue("dataUpload")}</div>),
     },
     {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (<div className="capitalize flex items-center gap-2">
+        {row.getValue("status") === 'pending' && <span><Loader size={16} className="animate-spin" /></span>}
+        {row.getValue("status") === 'success' && <span><CheckCircle size={16} className="text-green-500" /></span>}
+      </div>),
+      size: 80,
+    },
+    {
+      accessorKey: "totalLinhas",
+      header: "Linhas",
+      cell: ({ row }) => (<div className="capitalize">{row.getValue("totalLinhas")}</div>),
+    },
+    {
+      accessorKey: "totalLinhasInvalidas",
+      header: "Inválidas",
+      cell: ({ row }) => (<div className="capitalize">{row.getValue("totalLinhasInvalidas")}</div>),
+    },
+    {
+      accessorKey: "fixo",
+      header: "Fixo",
+      cell: ({ row }) => (<div className="capitalize">{row.getValue("fixo")}</div>),
+    },
+    {
+      accessorKey: "movel",
+      header: "Móvel",
+      cell: ({ row }) => (<div className="capitalize">{row.getValue("movel")}</div>),
+    },
+    {
       accessorKey: "utils",
       header: "",
       cell: ({ row }) => (<div className="capitalize flex justify-end gap-2">
@@ -133,15 +166,25 @@ export function FileTable() {
           <Button
             variant={"outline"}
             size={"icon"}
-            onClick={() => setSelectedFile(row.original.id)}>
+            onClick={() => {
+              setSelectedFile({ id: row.original.id, name: row.original.nomeArquivo })
+              changeViewSheet(row.original.nomeArquivo)
+            }}>
             <Eye />
             {row.getValue("select")}</Button>
         </TooltipPadrao>
         <TooltipPadrao message="Download">
           <Button
-            variant={"secondary"}
+            variant={"outline"}
             size={'icon'}
             onClick={exportDefaultSheet}><Download size={16} /></Button>
+        </TooltipPadrao>
+        <TooltipPadrao message="Download">
+          <Button
+            variant={"destructive"}
+            size={'icon'}
+            className="ml-2">
+            <Trash size={16} /></Button>
         </TooltipPadrao>
         {/* {row.getIsSelected() && (
           <Button
@@ -194,7 +237,7 @@ export function FileTable() {
     }, 1000)
   }, [maxRows, table]);
 
-  return !showCheckerTable ? (
+  return viewSheet === 'default' ? (
     <div className=" w-full">
       <div className="relative flex items-center py-4">
         <Search size={16} className="absolute left-2" />

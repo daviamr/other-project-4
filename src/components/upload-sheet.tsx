@@ -18,7 +18,7 @@ export function UploadSheet() {
     <Dialog>
       <form>
         <DialogTrigger asChild>
-          <Button variant="outline" type="button" className="relative ml-4"><FileUp size={16} /> Upload</Button>
+          <Button variant="outline" type="button" className="relative ml-4"><FileUp size={16} /> Novo Arquivo</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

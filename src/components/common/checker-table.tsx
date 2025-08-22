@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ChevronsLeft, ChevronsRight, Copy, Download, Loader, Orbit, Search, Trash } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Copy, Download, Loader, Orbit, Search, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -47,7 +47,8 @@ const data: Payment[] = [
     anatel: 'Válido',
     operadora: "Claro",
     tipo: 'Móvel',
-    municipio: 'RJ',
+    municipio: 'Rio de Janeiro',
+    uf: 'RJ',
     dataHoraConsulta: '25/10/2398, 18:09h'
   },
   {
@@ -56,7 +57,8 @@ const data: Payment[] = [
     anatel: 'Inválido',
     operadora: "Tim",
     tipo: 'Móvel',
-    municipio: 'SP',
+    municipio: 'São Paulo',
+    uf: 'SP',
     dataHoraConsulta: '12/12/3498, 13:39h'
   },
   {
@@ -65,7 +67,8 @@ const data: Payment[] = [
     anatel: 'Inválido',
     operadora: "Vivo",
     tipo: 'Fixo',
-    municipio: 'RJ',
+    municipio: 'Rio de Janeiro',
+    uf: 'RJ',
     dataHoraConsulta: '01/07/9888, 12:18h'
   }
 ]
@@ -77,7 +80,8 @@ export type Payment = {
   operadora: string
   tipo: string
   municipio: string
-  dataHoraConsulta: string
+  uf: string
+  dataHoraConsulta?: string
 }
 
 export function CheckerTable() {
@@ -89,11 +93,12 @@ export function CheckerTable() {
   const [isLoading, setIsLoading] = React.useState(false)
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
   const [hasSelectedRows, setHasSelectedRows] = React.useState(false)
-  const [showField, setShowField] = React.useState<string>('Todos')
+  const [showField, setShowField] = React.useState<string>('anatel')
+  console.log(showField)
   const { exportDefaultSheet } = useSheetController()
+
   const copyFormattedData = async (rowData: Payment) => {
     const formattedText = `Número: ${rowData.numero} | Operadora: ${rowData.operadora} | Data de Consulta: ${rowData.dataHoraConsulta}`
-
     try {
       await navigator.clipboard.writeText(formattedText);
       // Aqui você pode adicionar uma notificação de sucesso se quiser
@@ -110,13 +115,13 @@ export function CheckerTable() {
     }
   };
 
-  const filteredData = React.useMemo(() => {
-    if (showField === 'Todos') {
-      return data
-    }
-    const filteredData = data.filter(item => item.operadora === showField)
-    return filteredData
-  }, [showField])
+  // const filteredData = React.useMemo(() => {
+  //   if (showField === 'Todos') {
+  //     return data
+  //   }
+  //   const filteredData = data.filter(item => item.operadora === showField)
+  //   return filteredData
+  // }, [showField])
 
   const columns: ColumnDef<Payment>[] = [
     {
@@ -151,7 +156,7 @@ export function CheckerTable() {
     },
     {
       accessorKey: "operadora",
-      header: "Operadora",
+      header: "Operadora Origem",
       cell: ({ row }) => (<div className="capitalize">{row.getValue("operadora")}</div>),
     },
     {
@@ -165,9 +170,9 @@ export function CheckerTable() {
       cell: ({ row }) => (<div className="capitalize">{row.getValue("municipio")}</div>),
     },
     {
-      accessorKey: "dataHoraConsulta",
-      header: "Data Consulta",
-      cell: ({ row }) => (<div className="capitalize">{row.getValue("dataHoraConsulta")}</div>),
+      accessorKey: "uf",
+      header: "UF",
+      cell: ({ row }) => (<div className="capitalize">{row.getValue("uf")}</div>),
     },
     {
       accessorKey: "utils",
@@ -204,7 +209,8 @@ export function CheckerTable() {
   ]
 
   const table = useReactTable({
-    data: filteredData,
+    // data: filteredData,
+    data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -234,33 +240,35 @@ export function CheckerTable() {
   }, [maxRows, table]);
 
   return (
+
     <div className=" w-full">
       <div className="relative flex items-center py-4">
         <Search size={16} className="absolute left-2" />
         <div className="flex items-center gap-4 w-full">
           <Input
-            placeholder="Filtrar por palavra"
-            value={(table.getColumn("operadora")?.getFilterValue() as string) ?? ""}
-            onChange={(event) => table.getColumn("operadora")?.setFilterValue(event.target.value)}
+            placeholder={`Filtrar por ${showField}`}
+            value={(table.getColumn(showField)?.getFilterValue() as string) ?? ""}
+            onChange={(event) => table.getColumn(showField)?.setFilterValue(event.target.value)}
             className="pl-8 min-w-40" />
 
           <Select value={showField} onValueChange={setShowField}>
             <SelectTrigger className="font-bold w-40">
               <Orbit size={16} />
-              {showField}
+              {showField.charAt(0).toUpperCase() + showField.slice(1)}
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Filtrar por operadora</SelectLabel>
-                <SelectItem value='Todos'>Todos</SelectItem>
-                <SelectItem value='Tim'>Tim</SelectItem>
-                <SelectItem value='Vivo'>Vivo</SelectItem>
-                <SelectItem value='Claro'>Claro</SelectItem>
+                <SelectLabel>Selecione o parâmetro de filtro</SelectLabel>
+                <SelectItem value='anatel'>Anatel</SelectItem>
+                <SelectItem value='operadora'>Operadora</SelectItem>
+                <SelectItem value='tipo'>Tipo</SelectItem>
+                <SelectItem value='município'>Município</SelectItem>
+                <SelectItem value='uf'>UF</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
 
-          <SheetInfo success={92} error={10} pf={10} pj={22} unkpfpj={13} />
+          <SheetInfo success={92} error={10} mobile={10} phone={22} />
         </div>
 
         <div className="flex w-full justify-end">
@@ -273,6 +281,40 @@ export function CheckerTable() {
               <Button variant={"outline"} className={`hidden ${hasSelectedRows && 'flex'}`}
                 onClick={() => { console.log(selectedIds) }}><Download size={16} /> Download Seleção</Button>
             </TooltipPadrao>
+          </div>
+          <div className="flex items-center justify-end space-x-2">
+            <span className="text-sm text-gray-600 pl-2">
+              Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => table.setPageIndex(0)}
+                disabled={!table.getCanPreviousPage()}>
+                <ChevronsLeft />
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}>
+                <ChevronLeft />
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}>
+                <ChevronRight />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                disabled={!table.getCanNextPage()}>
+                <ChevronsRight />
+              </Button>
+            </div>
           </div>
           {/* <UploadSheet /> */}
           <TooltipPadrao message="Download Total">
@@ -343,44 +385,9 @@ export function CheckerTable() {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} de{" "}
-          {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}>
-            <ChevronsLeft />
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}>
-            Anterior
-          </Button>
-
-          <span className="text-sm text-gray-600">
-            Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
-          </span>
-
-          <Button
-            variant="outline"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}>
-            Próximo
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            disabled={!table.getCanNextPage()}>
-            <ChevronsRight />
-          </Button>
-        </div>
+      <div className="text-muted-foreground flex-1 text-sm py-4">
+        {table.getFilteredSelectedRowModel().rows.length} de{" "}
+        {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
       </div>
     </div>
   )
