@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { CheckCircle, ChevronsLeft, ChevronsRight, Download, Eye, Loader, Search, Trash } from "lucide-react"
+import { CheckCircle, ChevronsLeft, ChevronsRight, CircleX, Download, ExternalLink, Eye, Loader, Search, Share, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -39,6 +39,7 @@ import { TooltipPadrao } from "../tooltip"
 import { useSheetController } from "@/pages/Checker/sheet-controller"
 import { CheckerTable } from "./checker-table"
 import { useViewSheet } from "@/contexts/sheet-context"
+import { ShareWorkSheet } from "../share"
 
 const data: Payment[] = [
   {
@@ -55,7 +56,7 @@ const data: Payment[] = [
     id: "m5gr84i10",
     nomeArquivo: "planilha-template-3.xlsx",
     dataUpload: "19/08/2024, 08:21h",
-    status: 'success',
+    status: 'error',
     totalLinhas: '1223',
     totalLinhasInvalidas: '134',
     fixo: '897',
@@ -132,37 +133,42 @@ export function FileTable() {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (<div className="capitalize flex items-center gap-2">
-        {row.getValue("status") === 'pending' && <span><Loader size={16} className="animate-spin" /></span>}
-        {row.getValue("status") === 'success' && <span><CheckCircle size={16} className="text-green-500" /></span>}
+        {row.getValue("status") === 'success' && <span><TooltipPadrao message="Processado com sucesso"><CheckCircle size={16} className="text-green-500" /></TooltipPadrao></span>}
+        {row.getValue("status") === 'pending' && <span><TooltipPadrao message="Erro ao processar"><CircleX size={16} className="text-red-500" /></TooltipPadrao></span>}
+        {row.getValue("status") === 'error' && <span><TooltipPadrao message="Processando"><Loader size={16} className="animate-spin" /></TooltipPadrao></span>}
       </div>),
       size: 80,
     },
     {
       accessorKey: "totalLinhas",
-      header: "Linhas",
+      header: "Total",
       cell: ({ row }) => (<div className="capitalize">{row.getValue("totalLinhas")}</div>),
+      size: 80,
     },
     {
       accessorKey: "totalLinhasInvalidas",
       header: "Inválidas",
       cell: ({ row }) => (<div className="capitalize">{row.getValue("totalLinhasInvalidas")}</div>),
+      size: 80,
     },
     {
       accessorKey: "fixo",
       header: "Fixo",
       cell: ({ row }) => (<div className="capitalize">{row.getValue("fixo")}</div>),
+      size: 80,
     },
     {
       accessorKey: "movel",
       header: "Móvel",
       cell: ({ row }) => (<div className="capitalize">{row.getValue("movel")}</div>),
+      size: 80,
     },
     {
       accessorKey: "utils",
       header: "",
       cell: ({ row }) => (<div className="capitalize flex justify-end gap-2">
         { }
-        <TooltipPadrao message="Renderizar planilha">
+        <TooltipPadrao message="Visualizar resultado">
           <Button
             variant={"outline"}
             size={"icon"}
@@ -179,12 +185,14 @@ export function FileTable() {
             size={'icon'}
             onClick={exportDefaultSheet}><Download size={16} /></Button>
         </TooltipPadrao>
-        <TooltipPadrao message="Download">
+        <TooltipPadrao message="Excluir">
           <Button
-            variant={"destructive"}
-            size={'icon'}
-            className="ml-2">
+            variant={"outline"}
+            size={'icon'}>
             <Trash size={16} /></Button>
+        </TooltipPadrao>
+        <TooltipPadrao message="Compartilhar">
+          <ShareWorkSheet />
         </TooltipPadrao>
         {/* {row.getIsSelected() && (
           <Button
@@ -269,8 +277,8 @@ export function FileTable() {
       <div className="rounded-md border relative">
         <div className="absolute right-2 top-[2px] z-10">
           <Select value={maxRows.toString()} onValueChange={(value) => setMaxRows(Number(value))}>
-            <SelectTrigger className="font-bold">{maxRows}</SelectTrigger>
-            <SelectContent>
+            <SelectTrigger className="font-bold border-none bg-background hover:bg-background dark:hover:bg-background">{maxRows}</SelectTrigger>
+            <SelectContent className="bg-background">
               <SelectGroup>
                 <SelectItem value='50'>50</SelectItem>
                 <SelectItem value='100'>100</SelectItem>

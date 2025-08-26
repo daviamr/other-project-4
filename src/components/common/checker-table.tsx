@@ -268,7 +268,7 @@ export function CheckerTable() {
             </SelectContent>
           </Select>
 
-          <SheetInfo success={92} error={10} mobile={10} phone={22} />
+          <SheetInfo total={32} success={92} error={10} mobile={10} phone={22} />
         </div>
 
         <div className="flex w-full justify-end">
@@ -385,9 +385,39 @@ export function CheckerTable() {
           </TableBody>
         </Table>
       </div>
-      <div className="text-muted-foreground flex-1 text-sm py-4">
-        {table.getFilteredSelectedRowModel().rows.length} de{" "}
-        {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
+      <div className="flex items-center justify-between space-x-2 py-4">
+        <span className="text-sm text-gray-600 pl-2">
+          Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
+        </span>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => table.setPageIndex(0)}
+            disabled={!table.getCanPreviousPage()}>
+            <ChevronsLeft />
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}>
+            <ChevronLeft />
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}>
+            <ChevronRight />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            disabled={!table.getCanNextPage()}>
+            <ChevronsRight />
+          </Button>
+        </div>
       </div>
     </div>
   )
