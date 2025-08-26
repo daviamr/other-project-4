@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Copy, Download, Loader, Orbit, Search, Trash } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Copy, Download, Filter, Loader, Search, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -32,13 +32,13 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
 } from "@/components/ui/select"
 // import { UploadSheet } from "../upload-sheet"
 import { SheetInfo } from "../sheetIconsInfo"
 import { TooltipPadrao } from "../tooltip"
 import { useSheetController } from "@/pages/Checker/sheet-controller"
+import { Label } from "../ui/label"
 
 const data: Payment[] = [
   {
@@ -93,8 +93,8 @@ export function CheckerTable() {
   const [isLoading, setIsLoading] = React.useState(false)
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
   const [hasSelectedRows, setHasSelectedRows] = React.useState(false)
-  const [showField, setShowField] = React.useState<string>('anatel')
-  console.log(showField)
+  const [showFilter, setShowFilter] = React.useState<string[]>(['anatel'])
+  const [showFilters, setShowFilters] = React.useState(false)
   const { exportDefaultSheet } = useSheetController()
 
   const copyFormattedData = async (rowData: Payment) => {
@@ -246,27 +246,22 @@ export function CheckerTable() {
         <Search size={16} className="absolute left-2" />
         <div className="flex items-center gap-4 w-full">
           <Input
-            placeholder={`Filtrar por ${showField}`}
-            value={(table.getColumn(showField)?.getFilterValue() as string) ?? ""}
-            onChange={(event) => table.getColumn(showField)?.setFilterValue(event.target.value)}
+            placeholder={`Filtrar por Anatel`}
+            value={(table.getColumn('anatel')?.getFilterValue() as string) ?? ""}
+            onChange={(event) => table.getColumn('anatel')?.setFilterValue(event.target.value)}
             className="pl-8 min-w-40" />
 
-          <Select value={showField} onValueChange={setShowField}>
-            <SelectTrigger className="font-bold w-40">
-              <Orbit size={16} />
-              {showField.charAt(0).toUpperCase() + showField.slice(1)}
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Selecione o parâmetro de filtro</SelectLabel>
-                <SelectItem value='anatel'>Anatel</SelectItem>
-                <SelectItem value='operadora'>Operadora</SelectItem>
-                <SelectItem value='tipo'>Tipo</SelectItem>
-                <SelectItem value='município'>Município</SelectItem>
-                <SelectItem value='uf'>UF</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          {showFilter.includes('operadora') && (
+            <Input
+              placeholder="Filtrar por Operadora"
+              value={(table.getColumn("operadora")?.getFilterValue() as string) ?? ""}
+              onChange={(event) => table.getColumn("operadora")?.setFilterValue(event.target.value)}
+            />
+          )}
+
+          <Button variant={"outline"} size={"icon"} onClick={() => setShowFilters(prev => !prev)}>
+            <Filter size={16} />
+          </Button>
 
           <SheetInfo total={32} success={92} error={10} mobile={10} phone={22} />
         </div>
@@ -419,6 +414,40 @@ export function CheckerTable() {
           </Button>
         </div>
       </div>
+      {
+        showFilters && (
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-black/30 z-50"
+            onClick={() => setShowFilters(false)}
+          >
+            <div
+              className="bg-background p-6 rounded-lg shadow-lg w-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="text-2xl pb-4 border-b">Selecione os filtros</p>
+              <div className="flex items-center gap-2 text-white py-4">
+                <Input
+                  type="checkbox"
+                  className="max-w-4 h-4 w-4"
+                  id="operadora"
+                  checked={showFilter.includes('operadora')}
+                  onChange={(e) => {
+                    const value = 'operadora';
+                    if (e.target.checked) {
+                      setShowFilter(prev => [...prev, value]);
+                    } else {
+                      setShowFilter(prev => prev.filter(item => item !== value));
+                    }
+                  }}
+                />
+                <Label htmlFor="operadora" className="text-white cursor-pointer">
+                  Operadora Origem
+                </Label>
+              </div>
+            </div>
+          </div>
+        )
+      }
     </div>
   )
 }
